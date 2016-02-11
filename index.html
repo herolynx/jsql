@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Jsql by herolynx</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Jsql</h1>
+      <h2 class="project-tagline">DSL library for building SQL queries in Java</h2>
+      <a href="https://github.com/herolynx/jsql" class="btn">View on GitHub</a>
+      <a href="https://github.com/herolynx/jsql/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/herolynx/jsql/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="jsql" class="anchor" href="#jsql" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>jSQL</h1>
+
+<p>DSL library for building SQL queries in Java in similar way as it's done in LINQ for .NET. </p>
+
+<p>Only DQL (Data Query Language) is supported as modifications on entities should be made using entity manager. </p>
+
+<p><strong>Advantages of jSQL are:</strong> </p>
+
+<ul>
+<li><p>no string SQL statements (queries kept as code and managed by IDE) </p></li>
+<li><p>simplicity </p></li>
+<li><p>no additional classes to be generated </p></li>
+<li><p>no static and thread-safe pattern usage what improves performance significantly </p></li>
+<li><p>support of any grammar by using AST (currently by default grammars of PostgreSQL 8.4 and JPQL are supported) </p></li>
+<li><p>optimizing of conditions in queries </p></li>
+</ul>
+
+<h1>
+<a id="sample-of-usage" class="anchor" href="#sample-of-usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Sample of usage:</h1>
+
+<h2>
+<a id="1-pojo-entity-definition" class="anchor" href="#1-pojo-entity-definition" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>1. POJO entity definition:</h2>
+
+<div class="highlight highlight-source-java"><pre>@<span class="pl-smi">Entity</span>
+<span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">Entity</span> {
+
+    <span class="pl-k">private</span> <span class="pl-smi">Long</span> id;
+    <span class="pl-k">private</span> <span class="pl-smi">String</span> string;
+    <span class="pl-k">private</span> <span class="pl-smi">String</span> secondString;
+
+    <span class="pl-k">public</span> <span class="pl-smi">Long</span> <span class="pl-en">getId</span>() {
+        <span class="pl-k">return</span> id;
+    }
+
+    <span class="pl-k">public</span> <span class="pl-smi">String</span> <span class="pl-en">getString</span>() {
+        <span class="pl-k">return</span> string;
+    }
+
+    <span class="pl-k">public</span> <span class="pl-smi">String</span> <span class="pl-en">getSecondString</span>() {
+        <span class="pl-k">return</span> secondString;
+    }
+
+}</pre></div>
+
+<h2>
+<a id="2-bulding-query-using-jsql" class="anchor" href="#2-bulding-query-using-jsql" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>2. Bulding query using jSQL:</h2>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-c">//create jSQL for PostgreSQL 8.4</span>
+<span class="pl-smi">JSql</span> sql <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">JSql</span>(<span class="pl-k">new</span> <span class="pl-smi">PostgreSQL</span>());
+<span class="pl-c">//prepare recording on entity</span>
+<span class="pl-smi">Entity</span> entity <span class="pl-k">=</span> sql<span class="pl-k">.</span>alias(<span class="pl-smi">Entity</span><span class="pl-k">.</span>class);
+<span class="pl-c">//build query</span>
+sql<span class="pl-k">.</span>select(entity<span class="pl-k">.</span>getId(), entity<span class="pl-k">.</span>getString())<span class="pl-k">.</span>from(entity)
+   .where(sql<span class="pl-k">.</span>cond()<span class="pl-k">.</span>eq(entity<span class="pl-k">.</span>getId(), <span class="pl-c1">5</span>)<span class="pl-k">.</span>and()<span class="pl-k">.</span>eq(entity<span class="pl-k">.</span>getString(), <span class="pl-s"><span class="pl-pds">"</span>aaa<span class="pl-pds">"</span></span>));
+<span class="pl-c">//build JPA query</span>
+<span class="pl-smi">EntityManager</span> em <span class="pl-k">=</span> <span class="pl-c1">...</span> <span class="pl-c">//provide your entity manager here</span>
+<span class="pl-smi">Query</span> query <span class="pl-k">=</span> sql<span class="pl-k">.</span>getQuery(em , <span class="pl-smi">Entity</span><span class="pl-k">.</span>class);
+query<span class="pl-k">.</span>getResultList();</pre></div>
+
+<h1>
+<a id="build" class="anchor" href="#build" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Build</h1>
+
+<p>jSQL is using test DB to check whether all built SQL statements are correct.</p>
+
+<p>Therefore before making build, PostgreSQL 8.4 database must be created with following credentials:</p>
+
+<pre><code>Database: jsql
+Port: 5432
+Username: jsql
+Password: jsql
+</code></pre>
+
+<p>After setting up database just run maven:</p>
+
+<pre><code>mvn clean install
+</code></pre>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/herolynx/jsql">Jsql</a> is maintained by <a href="https://github.com/herolynx">herolynx</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
